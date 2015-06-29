@@ -1,0 +1,39 @@
+<!--
+  This template loads for the 'app.eventdetail' state (app.js)
+  'friend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view view-title="{{event.json.name}}">
+    <!-- <div class="bar bar-subheader"><img src="{{event.json.facebook[0].coverUrl}}" style="width: 100%;"></div> -->
+    <ion-content class="">
+        <div class="list card" ng-repeat="event in events | filter : whichevent">
+         <div class="item item-image">
+        <img src="{{event.json.facebook[0].cover.url}}" class="item-full">
+        </div>
+            <div class="item item-body">
+
+                <div class="item">
+                    <h2 class="pull-left">{{event.json.name}}</h2>
+                    <p>{{event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{event.json.endDate | date : 'HH:mm'}}</p>
+                    <span class=""><span ng-repeat="style in event.json.styles"> | {{style.style}}</span> |</span>
+
+
+                <h3>Lineup:</h3>
+                <span ng-repeat="stage in event.json.lineUp"><h4>{{stage.stageName}}</h4><span ng-repeat="artist in stage.artists">{{artist.time}} | {{artist.artist}} - {{artist.country}}<br></span></span>
+
+                </div>
+                <div class="item tabs tabs-secondary tabs-icon-left">
+                    <a class="tab-item" href="#">
+                        <i class="icon ion-thumbsup"></i> Like
+                    </a>
+                    <a class="tab-item" href="#">
+                        <i class="icon ion-chatbox"></i> Comment
+                    </a>
+                    <a class="tab-item" href="#">
+                        <i class="icon ion-share"></i> Share
+                    </a>
+                </div>
+            </div>
+    </ion-content>
+</ion-view>

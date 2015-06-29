@@ -1,0 +1,52 @@
+/* Empty. Add your own CSS if you like */
+
+#resultlist .list {
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-left: 20px;
+  margin-right: 20px;
+  background: #fff;
+}
+
+/*
+
+.menu-animated {
+  -webkit-transition: 500ms !important;
+  transition: 500ms !important;
+}
+
+.fade-in-out.ng-enter, .fade-in-out .ng-enter {
+  -webkit-animation: fadeIn 0.3s;
+  -moz-animation: fadeIn 0.3s;
+  animation: fadeIn 0.3s;
+  position: absolute; }
+  
+.fade-in-out.ng-leave, .fade-in-out .ng-leave {
+  -webkit-animation: fadeOut 0.3s;
+  -moz-animation: fadeOut 0.3s;
+  animation: fadeOut 0.3s;
+  position: absolute; }
+
+.side-menu {
+  width: 300px !important;
+}
+
+.side-menu h1,
+.side-menu h2,
+.side-menu h3 {
+  width: 250px;
+}
+
+.side-menu[side="right"] {
+  text-align: right;
+}
+
+.side-menu[side="right"] .item-complex .item-content,
+.side-menu[side="right"] .item-radio .item-content {
+  padding: 16px 16px 16px 49px;
+}
+
+.side-menu[side="right"] h1.title {
+  left: auto;
+}
+*/
