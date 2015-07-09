@@ -8,8 +8,17 @@ window.ionic.Platform.ready(function() {
     }, 0);
 });
 
-var localDB = new PouchDB("events_db");
-var remoteDB = new PouchDB("http://192.168.173.1:5984/events_db");
+var localDB = new PouchDB("events_db_big");
+var userDB = new PouchDB("user_db_big");
+
+//var remoteDB = new PouchDB("https://couchdb-6fd6db.smileupps.com/events_db");
+//var remoteDB = new PouchDB("http://localhost:5984/events_db_bigthumb");
+//var remoteDB = new PouchDB("http://192.168.43.95:5984/events_db_bigthumb");
+var remoteDB = new PouchDB("http://192.168.173.2:5984/events_db_bigthumb");
+
+
+// device APIs are available
+var watchID = null;
 
 angular.module('ionicApp', ['ionic', 'ionicApp.controllers', 'ionicApp.services', 'ngOpenFB'])
 
@@ -28,6 +37,12 @@ angular.module('ionicApp', ['ionic', 'ionicApp.controllers', 'ionicApp.services'
             // org.apache.cordova.statusbar required
             StatusBar.styleDefault();
         }
+        // high perf
+        //ionic.Platform.setGrade('c');
+
+        //get position.
+        //navigator.geolocation.getCurrentPosition(onSuccess, onError);
+        //watchLocation();
   });
 })
 
@@ -35,40 +50,42 @@ angular.module('ionicApp', ['ionic', 'ionicApp.controllers', 'ionicApp.services'
 
     $stateProvider
         .state('eventmenu', {
-            url: "/app",
+            url: "/events",
             abstract: true,
-            templateUrl: "templates/event-menu.html",
+            templateUrl: "templates/menu_container.html",
             controller: "ListCtrl"
         })
-        .state('eventmenu.home', {
-            url: "/home",
+        .state('eventmenu.events', {
+            url: "/eventlist",
             views: {
                 'menuContent': {
-                    templateUrl: "templates/home.html",
+                    templateUrl: "templates/events_list.html",
                     controller: "ListCtrl"
-                },
-            resolve: {
-                events: function(TodosService) {
-                    return EventsService.getEvents();
-                    }
                 }
             }
         })
         .state('eventmenu.event', {
-            url: "/event/:evId",
+            url: "/:evId",
             views: {
                 'menuContent': {
-                    templateUrl: "templates/eventdetail.html",
-                    controller: "ListCtrl"
-                },
-                resolve: {
-                    event: function($stateParams, TodosService) {
-                        return EventsService.getEvent($stateParams.evId);
+                    templateUrl: "templates/event_detail.html",
+                    controller: "EventDetailCtrl",
+                    resolve: {
+                        eventdetails: function($stateParams, EventsService) {
+                            return EventsService.getEvent($stateParams.evId);
+                        }
                     }
                 }
             }
+        })
+        .state('eventmenu.home', {
+            url: "",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/home.html",
+                    controller: "ListCtrl"
+                }
+            }
         });
-
-
-    $urlRouterProvider.otherwise("/app/home");
+    $urlRouterProvider.otherwise("events");
 });

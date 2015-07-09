@@ -7,7 +7,7 @@
 <ion-view view-title="{{event.json.name}}">
     <!-- <div class="bar bar-subheader"><img src="{{event.json.facebook[0].coverUrl}}" style="width: 100%;"></div> -->
     <ion-content class="">
-        <div class="list card" ng-repeat="event in events | filter : whichevent">
+        <div class="list card">
          <div class="item item-image">
         <img src="{{event.json.facebook[0].cover.url}}" class="item-full">
         </div>
@@ -15,9 +15,16 @@
 
                 <div class="item">
                     <h2 class="pull-left">{{event.json.name}}</h2>
-                    <p>{{event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{event.json.endDate | date : 'HH:mm'}}</p>
-                    <span class=""><span ng-repeat="style in event.json.styles"> | {{style.style}}</span> |</span>
+                    {{event.json.facebook[0].fbMFRatio}} -
+                    {{event.json.facebook[0].fbMFRatioN}}<br>
+                    <div ng-repeat="(key, price) in event.json.prices">
+                    {{price}}
+                    </div>
 
+
+                    <button class="button button-clear icon ion-star button-energized" ng-click="toggleStar(event)" ng-show="event.star"></button>
+                    <p>{{event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{event.json.endDate | date : 'HH:mm'}}</p>
+                    <span ng-repeat="style in event.json.styles"> | {{style.style}}</span> |
 
                 <h3>Lineup:</h3>
                 <span ng-repeat="stage in event.json.lineUp"><h4>{{stage.stageName}}</h4><span ng-repeat="artist in stage.artists">{{artist.time}} | {{artist.artist}} - {{artist.country}}<br></span></span>

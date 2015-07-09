@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
         <!-- Block NOOO!!! insecure webview operations, cordova plugin -->
-        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' http://connect.facebook.net/en_US/sdk.js http://localhost:35729/livereload.js http://code.ionicframework.com/nightly/js/ionic.bundle.js 'unsafe-inline' 'unsafe-eval'">
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' http://connect.facebook.net/en_US/sdk.js cdnjs.cloudflare.com ajax.googleapis.com http://localhost:35729/livereload.js http://code.ionicframework.com/nightly/js/ionic.bundle.js 'unsafe-inline' 'unsafe-eval'">
         <!-- Block some insecure webview operations, cordova plugin
         <meta http-equiv="Content-Security-Policy" content="default-src 'self' *://connect.facebook.net/* 'unsafe-eval' data: gap: https://ssl.gstatic.com, *://connect.facebook.net/* style-src 'self' *.facebook.net/* 'unsafe-inline'; media-src *">
         -->
@@ -15,14 +15,15 @@
         <link href="css/style.css" rel="stylesheet">
         <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
         <link href="css/ionic.app.css" rel="stylesheet">-->
+        <!-- <ionic/angularjs js <script src="lib/ionic/js/angular/angular.min.js"><script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js"></script></script> -->
 
-        <!-- <ionic/angularjs js <script src="lib/ionic/js/angular/angular.min.js"></script> -->
         <!-- PouchDb libs <script src="lib/pouchdb/dist/pouchdb.min.js"></script>-->
         <script src="lib/pouchdb/dist/pouchdb.min.js"></script>
-        <script src="lib/ionic/js/ionic.bundle.min.js"></script>
+        <script src="lib/ionic/js/ionic.bundle.js"></script>
+
+       <!--  <script src="//cdnjs.cloudflare.com/ajax/libs/angular-filter/0.4.9/angular-filter.min.js"></script> is this used? -->
 
     <!-- <script src="http://code.ionicframework.com/nightly/js/ionic.bundle.js"></script> -->
-
         <!-- Needed for Cordova/PhoneGap (will be a 404 during development) -->
         <script src="cordova.js"></script>
         <!-- your app's js     -->
@@ -30,10 +31,15 @@
         <script src="js/controllers.js"></script>
         <script src="js/services.js"></script>
         <!-- override ios animation for top-down transitions <script src="js/animations.js"></script>-->
-        
+
         <!-- xml2json lib <script src="js/libs/xml2json.min.js"></script> -->
-        
-        
+
+<!--SLY sly-repeat optimization         <script src="js/libs/scalyr.js"></script>
+<script src="js/libs/core.js"></script>
+<script src="js/libs/directives/slyEvaluate.js"></script>
+<script src="js/libs/directives/slyRepeat.js"></script> -->
+
+
         <!-- FB API/login libs -->
         <script src="js/libs/openfb.js"></script>
         <script src="js/libs/ngopenfb.js"></script>

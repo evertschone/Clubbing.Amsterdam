@@ -1,46 +1,23 @@
-<ion-view view-title="Amsterdam Party Guide">
-	<div class="bar bar-subheader bar-royal item-input-inset">
-	<label class="item-input-wrapper">
-	    <i class="icon ion-search placeholder-icon"></i>
-	    <input type="search" ng-model="filter.query"  ng-model-options="{debounce: 1000}" placeholder="Search">
-	</label>
-	<button class="button button-clear">
-    	Cancel
-  	</button>
-	</div>
-<!-- 	<link ng-href="css/slideUpDown.css" rel="stylesheet" /> -->
- <!-- overflow-scroll="1" -->
-    <ion-content class="padding has-subheader" has-bouncing="1" locking="0" >
-        <!-- <label class="item"> -->
-		    <button class="button button-block button-positive" ng-click="fbLogin()">
-		    Login with Facebook
-		    </button>
-		<!-- </label> -->
-		<p>
-		    Showing: {{(events | filter: filter.query | rangeFilter : filter.dateRange ).length }} events<span ng-show="filter.dateRange.dateMin">, starting from: <a menu-toggle="left"><strong>{{filter.dateRange.dateMin | date : 'MMMM d yyyy'}}</strong></a></span><span ng-show="filter.dateRange.dateMax"> | to: <strong>{{filter.dateRange.dateMax | date : 'MMMM d yyyy'}}</strong></span><span ng-show="filter.query"> | containing: <strong>{{filter.query}}</strong></span>
-	    </p>
-
-	    <ion-list class="list-inset" id="resultlist">
-	      <ion-item ng-class="{'star': event.star}"
-	      class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="event in events | filter: filter.query | rangeFilter : filter.dateRange | limitTo: 40" type="item-text-wrap" ng-href="#/app/event/{{event.json.id}}">
-	        <img src="{{event.json.facebook[0].thumbUrl}}" alt="{{ event.json.name }}">
-	        <h2 class="pull-left">{{event.json.name}}</h2>
-	        <span class=""><span ng-repeat="style in event.json.styles"> | {{style.style}}</span> |</span>
-	        <div>{{event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{event.json.endDate | date : 'HH:mm'}}</div>
-	        <p></p>
-	        <!-- UTC+2 waarschijnlijk weghalen, testen op mobiel met andere timezone -->
-
-
-	        <!-- <p>{{event.json.lineUp}}</p> -->
-			<button class="button button-clear icon ion-star button-energized" ng-click="toggleStar(event)" ng-show="event.star"></button>
-		    <ion-option-button class="button-dark" ng-click="toggleStar(event)">
-		    	<i class="icon ion-star"></i>
-		    </ion-option-button>
-	        <!-- <i class="icon ion-ios-star-outline"></i> -->
-<!-- 	        <ion-option-button class="button-assertive" ng-click="remove(event)">
-				  Delete
-				</ion-option-button> -->
-	      </ion-item>
-	    </ion-list>
+<!--
+  This template loads for the 'app.eventdetail' state (app.js)
+  'friend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view view-title="Welcome">
+    <!-- <div class="bar bar-subheader"><img src="{{event.json.facebook[0].coverUrl}}" style="width: 100%;"></div> -->
+    <ion-content class="">
+        <div class="list card">
+         <div class="item item-image">
+        </div>
+            <div class="item item-body">
+                <div class="item">
+                    <h2 class="pull-left">Welcome</h2>
+                    <p>Choose your filters in the left side menu</p>
+                    <span><button ng-click="toggleLeft();">Click here</button></span>
+                    <p>Or click here to see this weeks events</p>
+                    <span><button ng-click="go('events/eventlist')">Click here</button></span>
+                </div>
+            </div>
     </ion-content>
 </ion-view>

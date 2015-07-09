@@ -1,0 +1,92 @@
+<ion-side-menus enable-menu-with-back-views="true">
+    <ion-side-menu-content>
+        <ion-nav-bar class="bar-dark" align-title="center" no-tap-scroll="true" >
+            <ion-nav-buttons side="left">
+                <button class="button icon ion-android-options button-clear pull-left" menu-toggle="left">
+                </button>
+            </ion-nav-buttons>
+            <ion-nav-back-button nav-direction="enter">
+            </ion-nav-back-button>
+            <ion-nav-buttons side="right">
+                <button class="button icon ion-ios-star button-clear" menu-toggle="right">
+                </button>
+            </ion-nav-buttons>
+        </ion-nav-bar>
+        <ion-nav-view name="menuContent"></ion-nav-view>
+    </ion-side-menu-content>
+    <ion-side-menu side="left" class="side-menu" width="{{ maxwidth(46) }}" offset="-40">
+        <ion-header-bar class="bar-dark" no-tap-scroll="true" >
+            <a href="#/events" menu-toggle="left" ng-click=""><strong><h6 style="float:left; margin: 2px 4px; color: #fff;">{{(events | filter: filter.query | rangeFilter : filter.dateRange ).length }} events match for your criteria. <br>
+            ( <span ng-show="filter.dateRange.dateMin">from: <strong>{{filter.dateRange.dateMin | date : 'MMMM d yyyy'}}</strong></span><span ng-show="filter.dateRange.dateMax"> | to: <strong>{{filter.dateRange.dateMax | date : 'MMMM d yyyy'}}</strong></span><span ng-show="filter.query"> | containing: <strong>{{filter.query}}</strong></span> )
+            </h6></strong></a>
+            <button class="button back-button buttons button-clear header-item pull-right" ng-click="toggleLeft();" style="">
+                <span class="default-title">View</span>
+                <i class="icon ion-ios-arrow-forward"></i>
+            </button>
+        </ion-header-bar>
+        <ion-content>
+            <ul class="list" delegate-handle="searchList" >
+                <!-- filter.listLimit = 50; Note each link has the 'menu-close' attribute so the menu auto closes when clicking on one of these links -->
+                <li class="item item-input-inset">
+                    <label class="item-input-wrapper">
+                        <i class="icon ion-search placeholder-icon"></i>
+                        <input type="search" ng-model="filter.query" ng-model-options="{debounce: 4000}" placeholder="Search">
+                    </label>
+                    <button class="button button-clear" ng-click="filter.query=''">
+                        Clear
+                    </button>
+                </li>
+                <li class="item">
+                    <label class="item item-input">
+                        <span class="input-label">Start Date</span>
+                        <input type="date" id="date" ng-model="filter.dateRange.dateMin">
+                    </label>
+                </li>
+                <li class="item">
+                    <label class="item item-input">
+                        <span class="input-label">End Date</span>
+                        <input type="date" id="date" ng-model="filter.dateRange.dateMax">
+                    </label>
+                </li>
+                <li class="item">
+                    <a ng-href="#/events" class="item" menu-toggle="left" ng-click="filter.listLimit = 50; scrollListToTop();">Search</a>
+                </li>
+            </ul>
+        </ion-content>
+    </ion-side-menu>
+    <ion-side-menu side="right" class="side-menu" width="{{ maxwidth(46) }}" offset="-40">
+        <ion-header-bar class="bar-dark"  no-tap-scroll="true"  align-title="center" >
+            <h1 class="title">Favorites</h1>
+        </ion-header-bar>
+        <ion-content>
+            <ul class="list" delegate-handle="favsList" >
+                You have added {{(events | filter:{ star: 'true' }).length }} events to your favorites.
+                <ion-list class="list-inset" id="favlist">
+                    <ion-item ng-class="{'star': event.star}" class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="event in events | filter: {star : 'true'} | limitTo: 1000 " type="item-text-wrap" ng-href="#/events/{{event._id}}" menu-toggle="right">
+                        <img ng-src="{{event.json.facebook[0].thumbUrl}}" alt="{{event.json.name}}">
+                        <h2>{{event.json.name}}</h2>
+                        <!-- UTC+2 waarschijnlijk weghalen, testen op mobiel met andere timezone -->
+                        <p>{{event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{event.json.endDate | date : 'HH:mm'}}</p>
+                        <span ng-repeat="style in event.json.styles"> | {{style.style}}</span> |
+                        <button class="button button-clear icon ion-star button-energized" ng-click="toggleStar(event)" ng-show="event.star"></button>
+                        <ion-option-button class="button-dark" ng-click="toggleStar(event)">
+                            <i class="icon ion-star"></i>
+                        </ion-option-button>
+                        <!-- <i class="icon ion-ios-star-outline icon-energized" ng-show="event.star"></i>-->
+                        <!--            <ion-option-button class="button-assertive" ng-click="remove(event)">
+                          Delete
+                        </ion-option-button> -->
+                    </ion-item>
+                </ion-list>
+                <!-- Note each link has NO 'menu-close' attribute BECAUSE HISTORY so the menu auto closes when clicking on one of these
+                <li class="item">
+                    <a href="#/app/check-in" class="item" menu-toggle="right">Check-in</a>
+                </li>
+                <li class="item">
+                    <a href="#/app/attendees" class="item" menu-toggle="right">Attendees</a>
+                </li>
+                 -->
+            </ul>
+        </ion-content>
+    </ion-side-menu>
+</ion-side-menus>

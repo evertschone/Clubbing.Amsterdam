@@ -1,14 +1,249 @@
 /* Empty. Add your own CSS if you like */
-
-#resultlist .list {
+/*#resultlist .list {
   padding-left: 0px;
   padding-right: 0px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 0px;
+  margin-right: 0px;
   background: #fff;
 }
+*/
 
+.spinner {
+    margin: 10px auto 0;
+    width: 26px;
+    text-align: center;
+    display: none;
+}
+
+.spinner > div {
+    width: 6px;
+    height: 6px;
+    background-color: #333;
+    border-radius: 100%;
+    display: inline-block;
+    -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+    animation: bouncedelay 1.4s infinite ease-in-out;
+    /* Prevent first frame from flickering when animation starts */
+
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.spinner .bounce1 {
+    -webkit-animation-delay: -0.32s;
+    animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+    -webkit-animation-delay: -0.16s;
+    animation-delay: -0.16s;
+}
+
+@-webkit-keyframes bouncedelay {
+    0%, 80%, 100% {
+        -webkit-transform: scale(0.0)
+    }
+    40% {
+        -webkit-transform: scale(1.0)
+    }
+}
+
+@keyframes bouncedelay {
+    0%, 80%, 100% {
+        transform: scale(0.0);
+        -webkit-transform: scale(0.0);
+    }
+    40% {
+        transform: scale(1.0);
+        -webkit-transform: scale(1.0);
+    }
+}
+
+.insetselect {
+    background: #eee;
+    border: 0;
+    display: block;
+    padding-bottom: 0px;
+    padding-left: 0;
+    color: #111;
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 18px;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    padding-left: 8px;
+    width: 94%;
+    height: 30px;
+    background: transparent;
+}
+
+input[type="search"] {
+    margin-top: 0px;
+    padding-bottom: 0px;
+    padding-top: 0px;
+    height: 30px !important;
+}
+
+.centered{
+  text-align: center;
+}
+
+.input-button-right {
+  text-align: left;
+  padding-left: 8px !important;
+}
+
+/*LIST ITEM*/
+.item-complex .item-content, .item-radio .item-content{
+  padding: 1px 62px 16px 16px;
+}
+
+.item-content-left  {
+  padding: 1px 62px 16px 16px;
+  margin-left: -1px;
+}
+
+.item-thumbnail-left, .item-thumbnail-left .item-content {
+  height: 96px !important;
+  min-height: 96px !important;
+  padding-top: 7px;
+  padding-left: 94px;
+
+}
+
+.item-content .list-thumb, .item-content-left .list-thumb {
+  height: 78px !important;
+  width: 78px !important;
+  top: 8px !important;
+  left: 8px !important;
+}
+
+/* LIST FONTS */
+.location-title {
+    font-size: 13px;
+}
+
+.stat-col {
+    font-size: 13px;
+    border-left: 1px dotted #f4f4f4;
+    padding-left: 0px;
+    z-index: 5;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 100%;
+    /*background-color: #f4f4f4; width: 64px;*/
+}
+
+.list-distance {
+  position: absolute;
+    top: 3px;
+    right: 12px;
+}
+.list-attending {
+  position: absolute;
+    top: 25px;
+    right: 12px;
+}
+.list-gender {
+  position: absolute;
+    top: 49px;
+    right: 12px;
+    width: 43px;
+}
+.list-price {
+  position: absolute;
+    top: 69px;
+    right: 12px;
+    font-weight: bold;
+}
+
+
+.ion-male:before, .ion-man:before {
+  float: left;
+}
+.ion-female:before, .ion-woman:before {
+  float: left;
+}
+
+/* PIE CHART */
+
+/* opacity based on predictive value */
+.class-noP {
+  display: none;
+}
+.class-lowP {
+  opacity: 0.3;
+}
+.class-midP {
+  opacity: 0.6;
+}
+.class-highP {
+  opacity: 1;
+}
+
+.donut-chart {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto 2rem;
+  border-radius: 100%;
+  float: left;
+  padding: 0px 0px;
+  margin-right: 1px;
+ }
+.recorte {
+    border-radius: 50%;
+    clip: rect(0px, 24px, 24px, 12px);
+    height: 100%;
+    position: absolute;
+    width: 100%;
+  }
+.quesito {
+    border-radius: 50%;
+    clip: rect(0px, 24px, 24px, 12px);
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    font-family: monospace;
+    font-size: 1.5rem;
+  }
+#porcion1 {
+    transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg); /* IE 9 */
+    -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+    z-index: 45;
+  }
+#porcion1 .quesito {
+    background-color: #f6a;
+    background-color: #ff6e5d;
+    background-color: #bbb;
+  }
+#porcion2 {
+    transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg); /* IE 9 */
+    -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+  }
+#porcion2 .quesito {
+    background-color: #269;
+    background-color: #506a8f;
+    background-color: #444;
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+  }
+/***********************************
+  clip: rect(24px, 12px, 24px, 0px);
+transform: rotate(90deg);
+transform: rotate(90deg);
 /*
+.ion-spin, .ion-load-a, .ion-load-b, .ion-load-c, .ion-load-d, .ion-looping, .ion-refreshing, .ion-ios7-reloading {
+  -webkit-animation: spin 1s infinite linear;
+  -moz-animation: spin 1s infinite linear;
+  -o-animation: spin 1s infinite linear;
+  animation: spin 1s infinite linear;
+}
 
 .menu-animated {
   -webkit-transition: 500ms !important;
@@ -20,7 +255,7 @@
   -moz-animation: fadeIn 0.3s;
   animation: fadeIn 0.3s;
   position: absolute; }
-  
+
 .fade-in-out.ng-leave, .fade-in-out .ng-leave {
   -webkit-animation: fadeOut 0.3s;
   -moz-animation: fadeOut 0.3s;

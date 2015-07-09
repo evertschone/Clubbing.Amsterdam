@@ -1,0 +1,127 @@
+FUNCTIONAL:
+
+    favorite star.
+    decide if needed? >> button with modal popup for visible fields
+
+    Add loading icons (during: search, sort, open app, open detailview)
+
+    filter options on main view> toggle or open sidemenu?
+
+    add filters for: -social_stats(attendance/gender/popularity/internationalcrowd) -music_genres -distance(from set location?) -venue_size -price -is_festival?
+
+
+    user: post event to wall, update attending status, share event with friends, like app on fb )
+
+    keep the FB logged-in status
+    push notifications option when a filtered party is near
+
+    event detail:
+    -google maps link
+    -youtube link for artists
+    -add to calendar link
+    -share button
+
+    filter out events with too much missing data?
+
+    set max width for side panels, so that tablet devices can have them set to be always visibkle. and maybe find a better way to apply the sizes then @ onDevice ready, (maybe onScreenOn, PreDOMRender).
+
+
+        Done:
+
+        X sorting options ( change sort  input icon to seperate button to reverse sorting)
+        X Add sorting by Price and distance.
+        X (proper party info in list:  name, time, location (+distance), top 4 genres, top 4 lineup, nr attending, )
+        X implement geo-location
+        YES > >> better to remove the swipe to fav feature on events and make whole list swipeable
+        X create fav.list from item.starred
+        X facebook API functions. ( non-user:   update fb attendees? SOLVED: USE APP ID/SECRET.
+        X write script to refactor the scraped partflock jsons to "partyID" : { "prop1" : a , "prop2": b, etc. }
+        X>> Solved: Used lookup map, for index.
+
+
+LOCAL DATABASE:
+
+    add DB for user settings and fav list.
+    >> functions: add fav.id, remove fav.id, update app setting defaults, update last filters
+
+        Done:
+
+        X use pouchDB for json storage
+        X set up to sync with CouchDB API
+
+
+BUGS:
+
+    remove the left sidebar button in detail view, ( requires edit of ionic source, in the 'enable-menu-with-back-views' function try to make it selective of the sidemenu it is called upon. (or if all else fails hardcode the selector.)
+
+    keep the scroll position on back button, (weird problem, it's not the use of a non default scrolldelegate it seems. and if the app loads while in the detail view the scroll position is remembered, so it's likely a problem with the history stack. (or the lack thereoff), possible solutions: load the app on another nested view so the history is preserved when switching from there to the listview and to the details view, (try this and find a way so test the history stack for issues.) )
+
+    Better Error Catching in the API especially, ( probably keep learning Jasmine or Mocha 'till next project, adding it now will be a huge bitch.)
+
+    short button press sometimes triggers button twice.
+
+    only show distance when theres a gps location. (NaN)
+
+    speed up[ sorting and the inline filters  (cheapest price, real dates)
+
+    close keyboard with searh key, ( install corrdova keyboard plugin.)
+
+    ???>>> (node) warning: possible EventEmitter memory leak detected. 11 listeners added. Use emitter.setMaxListeners() to increase limit.
+    @ pouchdb.min.js:7reactToChanges
+    @ services.js:223
+
+
+        Done:
+
+        X swipe threshold for showing the side menu bugged? (nightly)
+        X fix missing keyboard for text input on sidebar
+
+
+    )
+
+
+OPTIMIZE / PERFORMANCE:
+
+    delay database changed check until after DOM is rendered.
+    remove sliding animations between views (or add setting).
+        x add dates to API db or use bind once for list( except for favs? )
+    test if material design for ionic is performant
+    dont update filters in main view until closing sidepanel
+    minimize animating html elements?
+
+        x Limit DOM filters (eg. the time render filter gets called 2 times for each time. so 4 times per event for each scope digest !!!) Instead apply filters in the controller before adding to the view. (or avoid the filter, store data pre-filtered)
+
+    Use bind-once where possible.
+
+    why so many scope digests and sort updates at startup?
+
+    check where, 'pure' js can be used instead of angular. (to minimize bindings).
+
+    cache images in background
+
+
+
+        Done:
+
+X (doesnt work)> consider caching the ng-repeat for the full list of items, and using a refresher function to pull the list again. (probably hard to keep databindings intact and still use the filter and sort functions  when using this method.)
+        X let the search box 2 way binding, only kick in after x secs not typing. and on lose focus.
+        X convert the partyflock RSS to json, en drop the unused data.
+
+
+API:
+
+    add normalized dates for quick display in list.
+    add normalized locations for " "
+    get county codes (flaggethes) ipv namen
+    get facebook location data, (+ link for location) to cross reference, add corrected/missing data.
+    get regular venue events, for missing fb links.
+    rescrape all facebook every x hours
+    add the rss for locations outside amsterdam
+
+    maybe cache pictures of age restricted events in the DB, so fb login is not needed for those
+
+        Done:
+
+        X Create webscraper
+        X refactor scraping results into well parsable json for CouchDB
+        X Set up CouchDB on server.
