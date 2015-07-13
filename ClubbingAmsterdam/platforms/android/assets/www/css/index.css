@@ -1,0 +1,9 @@
+﻿body {
+}
+
+.ion-spin, .ion-load-a, .ion-load-b, .ion-load-c, .ion-load-d, .ion-looping, .ion-refreshing, .ion-ios7-reloading {
+  -webkit-animation: spin 1s infinite linear;
+  -moz-animation: spin 1s infinite linear;
+  -o-animation: spin 1s infinite linear;
+  animation: spin 1s infinite linear;
+}

@@ -1,193 +1,307 @@
 // Helper to add hours to sime
-Date.prototype.addHours= function(h){
+Date.prototype.addHours = function(h) {
     var copy = new Date();
     copy.setTime(this.getTime());
-    copy.setHours(copy.getHours()+h);
+    copy.setHours(copy.getHours() + h);
     return copy;
 };
 
-var count=0;
-timearray=[];
+// geo location distance calc functions, should be in a service actually.
+function toRad(value) {
+    var RADIANT_CONSTANT = 0.0174532925199433;
+    return (value * RADIANT_CONSTANT);
+}
+
+function calculateDistance(starting, ending) {
+    var KM_RATIO = 6371;
+    try {
+        var dLat = toRad(ending.latitude - starting.latitude);
+        var dLon = toRad(ending.longitude - starting.longitude);
+
+        var lat1Rad = toRad(starting.latitude);
+        var lat2Rad = toRad(ending.latitude);
+
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1Rad) * Math.cos(lat2Rad);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = KM_RATIO * c;
+        ///console.log(d, c);
+        d = Math.round(d * 10) / 10;
+        return d;
+    } catch (e) {
+        return -1;
+    }
+}
+
+
+var count = 0;
+timearray = [];
 
 angular.module('ionicApp.services', [])
 
 /*FILTERS*/
-
-.filter('escape', function() {
-        if (text) {
-            return text.
-            replace(/&/g, '&amp;').
-            replace(/</g, '&lt;').
-            replace(/>/g, '&gt;');
-        }
-        return '';
-    })
 .filter('getLoc', function() {
-        return function(text) {
-            //console.log(text);
-            if (text) {
-                text= text.replace(/.+?\?q=([^\+]*?)\+*([^\+]*?)\+*([^\+]*?)\+*([^\+]*?)%2C(.+$)/,'$1 $2 $3 $4').replace(/\%(\d+)/g, function (m, n) { return String.fromCharCode(n); });
-            }else{
-                text='NA';
-            }
+    return function(text) {
+        //console.log(text);
+        if (text) {
+            text = text.replace(/.+?\?q=([^\+]*?)\+*([^\+]*?)\+*([^\+]*?)\+*([^\+]*?)%2C(.+$)/, '$1 $2 $3 $4').replace(/\%(\d+)/g, function(m, n) {
+                return String.fromCharCode(n);
+            });
+        } else {
+            text = 'NA';
+        }
         return text;
     };
 })
 
-    .filter('rangeFilter', function() {
-        return function(items, dateRange) {
-            //console.log('datarange sorting');
-            var filtered = [];
-/*          SLOWER MATCHING BUT MORE ACCURATE FOR TIMEZONES ( look into SAVING the dates as TOISOSTRING/TOUUCSTRING IN THE DB)
-            var min = dateRange.dateMin ? dateRange.dateMin : new Date("1970-12-31T23:00:00.000Z");
-            var max = dateRange.dateMax ? dateRange.dateMax : new Date("2500-12-30T23:00:00.000Z");
-*/
-            var min;
-            if (dateRange.dateMin) {
-                //tzoffset = -1*dateRange.dateMin.getTimezoneOffset()/60;
-                min = dateRange.dateMin.addHours(2).toISOString().replace(/\.\d+Z/,"+02:00");
-                //console.log(min);
-            }else{
-                min = "1970-12-31T23:00:00+2:00";
+.filter('rangeFilter', function() {
+    return function(items, dateRange) {
+        //console.log('datarange sorting');
+        var filtered = [];
+        /*          SLOWER MATCHING BUT MORE ACCURATE FOR TIMEZONES ( look into SAVING the dates as TOISOSTRING/TOUUCSTRING IN THE DB)
+                    var min = dateRange.dateMin ? dateRange.dateMin : new Date("1970-12-31T23:00:00.000Z");
+                    var max = dateRange.dateMax ? dateRange.dateMax : new Date("2500-12-30T23:00:00.000Z");
+        */
+        var min;
+        if (dateRange.dateMin) {
+            //tzoffset = -1*dateRange.dateMin.getTimezoneOffset()/60;
+            min = dateRange.dateMin.addHours(2).toISOString().replace(/\.\d+Z/, "+02:00");
+            //console.log(min);
+        } else {
+            min = "1970-12-31T23:00:00+2:00";
+        }
+
+        var max = dateRange.dateMax ? dateRange.dateMax.toISOString().replace(/\.\d+Z/, "+02:00") : "2500-12-30T23:00:00+2:00";
+        // If time is with the range
+
+        angular.forEach(items, function(item) {
+            // Should prob. put this in the json, NewDate perforamnce?
+            if (item.json) {
+                var eventDate = (!item.json.endDate || item.json.endDate === undefined) ? item.json.startDate : item.json.endDate;
+                // TIMEZONE VERSION BUT HAS TO DO NEWDATE FOR EACH ITEM >>
+                // var eventDate = (!item.json.endDate || item.json.endDate === undefined) ? new Date(item.json.startDate) : new Date(item.json.endDate);
+                if (eventDate >= min && eventDate <= max) {
+                    filtered.push(item);
+                }
             }
+        });
+        return filtered;
+    };
+})
+/* Distance Filter */
 
-            var max = dateRange.dateMax ? dateRange.dateMax.toISOString().replace(/\.\d+Z/,"+02:00") : "2500-12-30T23:00:00+2:00";
-            // If time is with the range
+.filter('distanceFilter', function() {
+    return function(items, filterValue, operator, currentPosition) {
+        //check is needed
+        if ( !( (filterValue === 0 && operator == 1) || (filterValue == 10 && operator === 0) ) ) {
+            console.log('Distance');
+            //add 'infinity'
+            if(filterValue==10){distanceFilt=999999999999999; }else{distanceFilt = filterValue;}
 
+            var filtered = [];
             angular.forEach(items, function(item) {
-                // Should prob. put this in the json, NewDate perforamnce?
                 if (item.json) {
-                    var eventDate = (!item.json.endDate || item.json.endDate === undefined) ? item.json.startDate : item.json.endDate;
-// TIMEZONE VERSION BUT HAS TO DO NEWDATE FOR EACH ITEM >>
-// var eventDate = (!item.json.endDate || item.json.endDate === undefined) ? new Date(item.json.startDate) : new Date(item.json.endDate);
-                    if (eventDate >= min && eventDate <= max) {
+                    var itemDistance = getDistance(item, currentPosition);
+                    if ( (operator && (itemDistance >= distanceFilt)) || (!operator && (itemDistance < distanceFilt)) ) {
                         filtered.push(item);
                     }
                 }
             });
             return filtered;
-        };
-    })
+        }else{
+            return items;
+        }
+    };
 
-    // Keep empty keys at the bottom when sorting.
-    .filter("emptyToEnd", function() {
-        return function(array, key) {
-            console.log('filtering sorting');
-            //start = Date.now();
-            //count+=1;
-            //timearray.push(start);
-            // make key array for lookup, remove json selector
-            var keys = key.replace(/\[(\d+)\]/g,".$1").split('.').slice(1);
-            //console.log(keys);
-            var present = [];
-            var empty = [];
-            if (!angular.isArray(array)) return;
-            array.forEach(function(item) {
+function getDistance(item, currentPosition) {
+        starting = currentPosition;
+        var ending = {};
+        eventLoc = item.json.geoLoc.split(' ');
+        ending.latitude = Number(eventLoc[0]);
+        ending.longitude = Number(eventLoc[1]);
+        //console.log(starting);
+        return calculateDistance(starting, ending);
+
+    }
+})
+
+.filter('priceFilter', function() {
+    return function(items, filterValue, operator) {
+        //check is needed
+        if ( !( (filterValue === 0 && operator == 1) || (filterValue == 100 && operator === 0) ) ) {
+            console.log('Price');
+            //add 'infinity'
+            if(filterValue==100){priceFilt=999999999999999; }else{priceFilt = (Number(filterValue)+0.1);}
+            var filtered = [];
+            angular.forEach(items, function(item) {
+                if (item.json) {
+                    // make normal values
+                    var lowestPriceSort = item.json.lowestPrice;
+                    if (lowestPriceSort == 'free') {
+                      lowestPriceSort = 0;
+                    }else if (lowestPriceSort == 'free*') {
+                      lowestPriceSort = 0;
+                    }else if (lowestPriceSort == 'soldout!') {
+                      lowestPriceSort = 99999;
+                    }
+                    //filter logic
+                    if ( (operator && (Number(lowestPriceSort) >= priceFilt)) || (!operator && (Number(lowestPriceSort) < priceFilt)) ) {
+                        filtered.push(item);
+                    }
+                }
+            });
+            return filtered;
+        }else{
+            //not needed, return items for next filter
+            return items;
+        }
+    };
+})
+
+.filter('attendanceFilter', function() {
+    return function(items, filterValue, operator) {
+        //check is needed
+        if ( !( (filterValue === 0 && operator == 1 ) || (filterValue == 1000 && operator === 0) ) ) {
+            console.log('Attendance');
+            //add 'infinity'
+            if(filterValue==1000){filterValue=999999999999999; }else{filterValue = (Number(filterValue));}
+            var filtered = [];
+            angular.forEach(items, function(item) {
+                if (item.json.facebook[0]) {
+                    // make normal values
+                    var value = item.json.facebook[0].fbAttending;
+                    //filter logic
+                    if ( (operator && (Number(value) >= filterValue)) || (!operator && (Number(value) < filterValue)) ) {
+                        filtered.push(item);
+                    }
+                }
+            });
+            return filtered;
+        }else{
+            //not needed, return items for next filter
+            return items;
+        }
+    };
+})
+
+.filter('ratioFilter', function() {
+    return function(items, filterValue, operator) {
+        //check is needed
+        if ( !( (filterValue === 0 && operator == 1 ) || (filterValue == 100 && operator === 0) ) ) {
+            console.log('Ratio');
+            //add 'infinity'
+            //
+            filterValue = filterValue / 100;
+            var filtered = [];
+            angular.forEach(items, function(item) {
+                if (item.json.facebook[0]) {
+                    // make normal values
+                    var value = item.json.facebook[0].fbMFRatio;
+                    //filter logic
+                    if ( (operator && (Number(value) >= filterValue)) || (!operator && (Number(value) < filterValue)) ) {
+                        filtered.push(item);
+                    }
+                }
+            });
+            return filtered;
+        }else{
+            //not needed, return items for next filter
+            return items;
+        }
+    };
+})
+
+
+// More general filter but slower.
+.filter('numberRangeFilter', function() {
+    return function(items, range, rangeOperator, itemKey, rangeMin, rangeInfin ) {
+        //add 'infinity'
+        if(range==rangeInfin){rangeFilt=9999999999999999999; }else{rangeFilt = (Number(range)+rangeMin);}
+        var filtered = [];
+        var keys = itemKey.replace(/\[(\d+)\]/g,".$1").split('.').slice(1);
+        angular.forEach(items, function(item) {
+            //copy event data
+            rangeResult = item.json;
+            for (i = 0 ; i< keys.length; i++) {
+                var key = keys[i];
+                //console.log(key);
+                if (typeof rangeResult[key] !== 'undefined') {
+                        rangeResult = rangeResult[key];
+                } else {
+                    rangeResult = 'undefined';
+                    break;
+                }
+            }
+            //filter
+            if (rangeResult!='undefined') {
+                // make normal values
+                var rangeSort = rangeResult;
+                //filter logic
+                if ( (rangeOperator && (Number(rangeSort) >= rangeFilt)) || (!rangeOperator && (Number(rangeSort) < rangeFilt)) ) {
+                    filtered.push(item);
+                }
+            }
+        });
+        return filtered;
+    };
+})
+
+/* filter by true variable*/
+.filter('hasProperty', function() {
+    return function(items, property, value, isActive) {
+        //check if needed
+        if(isActive){
+            console.log('HasProp sorting');
+            var keys = property.replace(/\[(\d+)\]/g,".$1").split('.').slice(1);
+            var filtered = [];
+            if (!angular.isArray(items)) return;
+            items.forEach(function(item) {
                 //copy event data
                 result = item.json;
                 for (i = 0 ; i< keys.length; i++) {
                     var key = keys[i];
                     //console.log(key);
                     if (typeof result[key] !== 'undefined') {
-                        if(key == 'fbMFRatio' && result['fbMFRatioN'] < 20){
+                        if(key == 'fbMFRatio' && result.fbMFRatioN < 20){
                             result = 0;
                         }else{
                             result = result[key];
                         }
-
                     }
                     else {
                         result = 0;
                         break;
                     }
                 }
-                result ? present.push(item) : empty.push(item);
+                if(result==value){ filtered.push(item); }
             });
-
-            //var count=1;
-            //timearray[count-1] = { c : count, t: (Date.now() - timearray[count-1]) };
-            //console.log(JSON.stringify(timearray) );
-            return present.concat(empty);
-        };
-    })
-
-                /* Unsave version of above with Eval()
-
-                parse the filterkeys so nested keys work. Not used
-                key = key.replace(/\[/g,".");
-                keylist = key.split(".");
-                selectors='["'+keylist.join('"]["')+'"]';
-                selectors = selectors.replace(/"(\d+)\]"/g,"$1");
-                var hasVal;
-
-
-                hasVal = 0;
-                console.log(result)
-                console.log(keys);
-
-                try {
-                    //console.log('item'+selectors)
-                    hasVal = eval('item'+selectors);
-                } catch (e) {
-                    hasVal = 0;
-                }
-
-                hasVal ? present.push(item) : empty.push(item);
-                */
-
-// USED???
-    .filter('hasProperty', function() {
-        return function(items, property) {
-            console.log('HasProp sorting');
-            var filtered = [];
-            angular.forEach(items, function(item) {
-                if (item.property === true) {
-                    filtered.push(item);
-                }
-            });
-        };
-    })
-
-
-/*DIRECTIVES*/
-
-.directive('slideAlong', function($timeout, $ionicSideMenuDelegate) {
-    return  {
-        link: function($scope, $element, $attrs) {
-            $scope.$watch(function() {
-                return $ionicSideMenuDelegate.getOpenRatio();
-            }, function(ratio) {
-                // retrieve the offset value from the offset attribute
-                var offset = parseInt($attrs.offset);
-                // set the new position
-                var position = $attrs.side == 'left' ? (ratio * (offset * -1)) + (offset) : (ratio * (offset * -1) - offset);
-                // we want to set the transition to 500ms (arbitrary) when
-                // clicking/tapping and 0ms when swiping
-                $element[0].style.webkitTransition = (ratio === 0 || ratio === 1 || ratio === -1) ? '500ms' : '0ms';
-                // we set the offset according to the current ratio
-                $element[0].style.webkitTransform = 'translate3d(' + position + '%, 0, 0)';
-            });
+            return filtered;
+        }else{
+            return items;
         }
     };
 })
 
-.directive('input', function($timeout){
-     return {
-         restrict: 'E',
-         scope: {
-             'returnClose': '=',
-             'onReturn': '&'
+
+
+/*DIRECTIVES*/
+.directive('input', function($timeout) {
+    return {
+        restrict: 'E',
+        scope: {
+            'returnClose': '=',
+            'onReturn': '&'
         },
-        link: function(scope, element, attr){
-            element.bind('keydown', function(e){
-                if(e.which == 13){
-                    if(scope.returnClose){
+        link: function(scope, element, attr) {
+            element.bind('keydown', function(e) {
+                if (e.which == 13) {
+                    if (scope.returnClose) {
                         console.log('return-close true: closing keyboard');
                         element[0].blur();
                     }
-                    if(scope.onReturn){
+                    if (scope.onReturn) {
                         console.log('on-return set: executing');
-                        $timeout(function(){
+                        $timeout(function() {
                             scope.onReturn();
                         });
                     }
@@ -198,7 +312,6 @@ angular.module('ionicApp.services', [])
 })
 
 /*FACTORIES*/
-
 .factory('GetPouchDocs', ['$rootScope', function($rootScope) {
 
     // init variables docs, contains pouch docs, db = db reference
@@ -248,7 +361,7 @@ angular.module('ionicApp.services', [])
 
     // $rootScope.$apply, to get the factory data to apply to the scope of the calling controller (is that how is works?)
     function renderDocs() {
-        console.log('DANGER ROOTSCOPE APPLY')
+        console.log('ROOTSCOPE APPLY');
         //var docs = ;
         $rootScope.$apply(function() {
             $rootScope.events = docs;
@@ -290,7 +403,6 @@ angular.module('ionicApp.services', [])
     }
 }])
 
-
 // finally working deferred db promise for getting one event, (problem was u hv 2 define the resolve within the route's view, durrr.. )
 .service('EventsService', function($q, $rootScope) {
     return {
@@ -302,12 +414,233 @@ angular.module('ionicApp.services', [])
                 });
             return dfd.promise;
         }
-
         /*getEvents: function() {
             return $rootScope.events;
         },*/
     };
 })
+
+.factory('geoLocationService', function($interval) {
+    var watchId;
+    return {
+        start: function(success, error) {
+            navigator.geolocation.getCurrentPosition(success, error, {
+                enableHighAccuracy: true
+            });
+            watchId = $interval(function() {
+                navigator.geolocation.getCurrentPosition(success, error);
+            }, 120000);
+        },
+        stop: function() {
+            if (watchId) {
+                $interval.cancel(watchId);
+            }
+        }
+    };
+})
+
+
+
+
+
+
+
+
+
+
+
+
+//UNNEEDED>>>
+//
+//
+
+.directive('slideAlong', function($timeout, $ionicSideMenuDelegate) {
+    return  {
+        link: function($scope, $element, $attrs) {
+            $scope.$watch(function() {
+                return $ionicSideMenuDelegate.getOpenRatio();
+            }, function(ratio) {
+                // retrieve the offset value from the offset attribute
+
+                // set the new position
+                var position = $attrs.side == 'left' ? (ratio * (offset * -1)) + (offset) : (ratio * (offset * -1) - offset);
+                // we want to set the transition to 500ms (arbitrary) when
+                // clicking/tapping and 0ms when swiping
+                $element[0].style.webkitTransition = (ratio === 0 || ratio === 1 || ratio === -1) ? '500ms' : '0ms';
+                // we set the offset according to the current ratio
+                $element[0].style.webkitTransform = 'translate3d(' + position + '%, 0, 0)';
+            });
+        }
+    };
+})
+
+.directive('positionate', function ($window) {
+    return {
+        link: function($scope, $element, $attrs) {
+            $element.bind("load" , function(e){
+                // success, "onload" caught
+                // now we can do specific stuff:
+                var offset_y = parseInt($attrs.yoffset);
+                console.log('positionate called ' + offset_y);
+                if(offset_y){
+                    var cover_w = 720;
+                    var cover_h =  315;
+                    var img_w = this.naturalWidth;
+                    var img_h = this.naturalHeight;
+                    console.log('w ' + cover_w + 'h ' + cover_h);
+                    var real_img_h = (cover_w * img_h / img_w) - cover_h;
+                    $scope.offsetcrop = { 'top': parseInt (real_img_h * offset_y / 100 * -1) + "px", position: 'absolute', width: '100%'};
+
+                    //$scope.offsetcrop = { 'clip': 'rect('+(parseInt (real_img_h * offset_y / 100 * -1)) + 'px,0,0,0)'};
+                }
+            });
+        }
+    };
+})
+
+.directive('crop', function ($window) {
+    return {
+        link: function($scope, $element, $attrs) {
+            $element.bind("load" , function(e){
+                var offset_y = parseInt($attrs.yoffset);
+                var img_w = this.width;
+                var img_h_is = this.height;
+                //var img_h_is = Math.floor(this.height - (this.height * ((offset_y)/100)))
+                var img_h_should = Math.round(img_w * 0.3682);
+                var cropHeight = (img_h_is - img_h_should);
+                var cropTop = (cropHeight/img_h_is)*(100/offset_y);
+                var cropBot = Math.round(((cropHeight *(offset_y/100)))*100);
+
+                console.log(img_h_is + ' ' + cropTop +' '+ cropHeight );
+                $scope.botCrop = { 'top': -cropTop+'%', transform: 'translate(0, -50%)' };
+                $element.parent().css('height', img_h_should + "px");
+          });
+        }
+    };
+})
+
+/*
+    $scope.positionate_cover = function (offset_y) {
+    var cover_w = 850;
+    var cover_h = 315;
+    var img_w = $(this).width ();
+    var img_h = $(this).height ();
+    var real_img_h = (cover_w * img_h / img_w) - cover_h;
+
+    $(this).css ({ top: parseInt (real_img_h * offset_y / 100 * -1) + "px" });
+    };
+
+    $(".ed-cover img")
+        .attr ("src", data.cover.source)
+        .positionate_cover (data.cover.offset_y)
+    ;
+
+ */
+
+.factory('EventDetails', ['$http', function($http) {
+    return {
+        all: function(callback) {
+            $http.get(
+                'js/libs/kimonoData.json', {
+                    transformResponse: function(data) {
+                        // convert the data to JSON and provide
+                        // it to the success function below
+                        var EventDetailsJson = transform(data);
+                        return EventDetailsJson;
+                    }
+                }
+            ).
+            success(function(data, status) {
+                // send the converted data back
+                // to the callback function
+                callback(data);
+            });
+        }
+    };
+}])
+
+.filter('escape', function() {
+    if (text) {
+        return text.
+        replace(/&/g, '&amp;').
+        replace(/</g, '&lt;').
+        replace(/>/g, '&gt;');
+    }
+    return '';
+})
+
+/*
+// Keep empty keys at the bottom when sorting.
+.filter("emptyToEnd", function() {
+    return function(array, key) {
+        console.log('filtering sorting');
+        //start = Date.now();
+        //count+=1;
+        //timearray.push(start);
+        // make key array for lookup, remove json selector
+        var keys = key.replace(/\[(\d+)\]/g,".$1").split('.').slice(1);
+        //console.log(keys);
+        var present = [];
+        var empty = [];
+        if (!angular.isArray(array)) return;
+        array.forEach(function(item) {
+            //copy event data
+            result = item.json;
+            for (i = 0 ; i< keys.length; i++) {
+                var key = keys[i];
+                //console.log(key);
+                if (typeof result[key] !== 'undefined') {
+                    if(key == 'fbMFRatio' && result['fbMFRatioN'] < 20){
+                        result = 0;
+                    }else{
+                        result = result[key];
+                    }
+
+                }
+                else {
+                    result = 0;
+                    break;
+                }
+            }
+            result ? present.push(item) : empty.push(item);
+        });
+
+        //var count=1;
+        //timearray[count-1] = { c : count, t: (Date.now() - timearray[count-1]) };
+        //console.log(JSON.stringify(timearray) );
+        return present.concat(empty);
+    };
+})
+
+
+ */
+
+/* Unsave version of above with Eval()
+
+parse the filterkeys so nested keys work. Not used
+key = key.replace(/\[/g,".");
+keylist = key.split(".");
+selectors='["'+keylist.join('"]["')+'"]';
+selectors = selectors.replace(/"(\d+)\]"/g,"$1");
+var hasVal;
+
+
+hasVal = 0;
+console.log(result)
+console.log(keys);
+
+try {
+    //console.log('item'+selectors)
+    hasVal = eval('item'+selectors);
+} catch (e) {
+    hasVal = 0;
+}
+
+hasVal ? present.push(item) : empty.push(item);
+*/
+
+// USED???
+
 
 //GEO LOCATION START AND STOP
 /*.factory('geoLocationService', function () {
@@ -325,43 +658,14 @@ angular.module('ionicApp.services', [])
         };
     })
 */
-.factory('geoLocationService', function ($interval) {
-        var watchId;
-
-        return {
-          start: function (success, error) {
-            navigator.geolocation.getCurrentPosition(success, error, {enableHighAccuracy: true});
-            watchId = $interval(function () {
-              navigator.geolocation.getCurrentPosition(success, error);
-            }, 120000);
-          },
-          stop: function () {
-            if (watchId) {
-              $interval.cancel(watchId);
-            }
-          }
-        };
-      })
-
-
-
-
-
-
-
-
-
-
-
-
-//UNNEEDED>>>
+/*
 .factory('PouchDBListener', ['$rootScope', function($rootScope) {
 
     //Old PouchListener Service, which broadcasts events to the controller, but does not allow for promises,
     //so DB population is done from scratch every time,
     // this approach also has some other flaws, because every update causes a complete DOM redraw, and sorting is not maintained.
     // unless the event listeners have some logic for this.
-    /*
+
         localDB.changes({
             continuous: true,
             include_docs: true,
@@ -384,10 +688,12 @@ angular.module('ionicApp.services', [])
                 }
 
             }
-        });*/
+        });
     return true;
 }])
+*/
 
+/*
 .factory('Events', ['$http', function($http) {
         return {
             all: function(callback) {
@@ -410,28 +716,8 @@ angular.module('ionicApp.services', [])
             }
         };
     }])
-    .factory('EventDetails', ['$http', function($http) {
-        return {
-            all: function(callback) {
-                $http.get(
-                    'js/libs/kimonoData.json', {
-                        transformResponse: function(data) {
-                            // convert the data to JSON and provide
-                            // it to the success function below
-                            var EventDetailsJson = transform(data);
-                            return EventDetailsJson;
-                        }
-                    }
-                ).
-                success(function(data, status) {
-                    // send the converted data back
-                    // to the callback function
-                    callback(data);
-                });
-            }
-        };
-    }]);
 
+*/
 
 /*
 function transform(data) {
@@ -632,3 +918,40 @@ function transform(data) {
 return newData;
 }
 */
+.filter("emptyToEnd", function() {
+    return function(array, key) {
+        //console.log('filtering sorting');
+        // make key array for lookup, remove json selector
+        var keys = key.replace(/\[(\d+)\]/g,".$1").split('.').slice(1);
+        //console.log(keys);
+        var present = [];
+        var empty = [];
+        if (!angular.isArray(array)) return;
+        array.forEach(function(item) {
+            //copy event data
+            result = item.json;
+            for (i = 0 ; i< keys.length; i++) {
+                var key = keys[i];
+                //console.log(key);
+                if (typeof result[key] !== 'undefined') {
+                    if(key == 'fbMFRatio' && result['fbMFRatioN'] < 20){
+                        result = 0;
+                    }else{
+                        result = result[key];
+                    }
+
+                }
+                else {
+                    result = 0;
+                    break;
+                }
+            }
+            result ? present.push(item) : empty.push(item);
+        });
+
+        //var count=1;
+        //timearray[count-1] = { c : count, t: (Date.now() - timearray[count-1]) };
+        //console.log(JSON.stringify(timearray) );
+        return present.concat(empty);
+    };
+});

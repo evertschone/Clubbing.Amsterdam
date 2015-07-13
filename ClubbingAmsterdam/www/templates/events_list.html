@@ -1,0 +1,101 @@
+<ion-view view-title="Results">
+    <div class="bar bar-subheader bar-dark item-input-inset row">
+        <div class="col-60 row">
+            <label class="item-input-wrapper col-100">
+                <i class="icon ion-search placeholder-icon"></i>
+                <input type="search" ng-model="filter.query" ng-model-options="{debounce: 1000}" placeholder="Search">
+                <i class="icon ion-sort placeholder-icon"></i>
+            </label>
+        </div>
+        <button class="button button-clear col-10 input-button-right" ng-click="filter.query = ''"><i class="icon-large ion-backspace"></i></button>
+        <div class="col-40 item-input-inset row">
+            <label class="item-input-wrapper col-100">
+                <i class="icon icon-left ion-android-funnel placeholder-icon"></i>
+                <select ng-change="sortSelectValue" ng-model="sortVal" class="insetselect">
+                    <option value="json.startDate" ng-selected="selected">date</option>
+                    <option value="json.name">name</option>
+                    <option value="json.geoLoc">distance</option>
+                    <option value="json.facebook[0].fbAttending">popular</option>
+                    <option value="json.facebook[0].fbMFRatio">m/f</option>
+                    <option value="json.prices[0].price">price</option>
+                </select>
+            </label>
+            <button class="button button-clear" ng-click="reverse=!reverse;" ng-style="reverse ? {} : { '-webkit-transform' : 'scale(1, -1)', 'transform' : 'scale(1, -1)' }"><i class="icon-large ion-chevron-down"></i></button>
+        </div>
+    </div>
+    <ion-content class="has-subheader" has-bouncing="1" locking="false" overflow-scroll="true" delegate-handle="searchList">
+        <p class="centered padding">
+            <!-- <button ng-click="recording(true);">{{filter.listLimit}}</button>
+            <button ng-click="count()">w: {{result}}</button>-->
+            Found: {{filteredEvents.length}} events<span ng-show="filter.dateRange.dateMin">, from: <a menu-toggle="left"><strong>{{filter.dateRange.dateMin | date : 'MMMM d yyyy'}}</strong></a></span>
+            <span ng-show="filter.dateRange.dateMax"> | to: <strong>{{filter.dateRange.dateMax | date : 'MMMM d yyyy'}}</strong></span>
+            <span ng-show="filter.query"> | containing: <strong>{{filter.query}}</strong></span>
+        </p>
+        <!--  filteredResults = (results | filter:filterPrice | filter:filterCarCategories | etc.)" -->
+
+        <ion-list id="resultlist">
+            <ion-item style="padding: 0px;" ng-repeat="event in filteredEvents |
+            orderBy: sortSelect : reverse |
+            limitTo: filter.listLimit
+            track by event._id" type="" >
+                <!-- emptyToEnd: sortVal | -->
+                <a class="item item-thumbnail-left item-content-left" class="{'star': event.star}" ng-href="#/events/{{::event._id}}">
+                    <img class="list-thumb" ng-src="{{::event.json.facebook[0].thumbUrl || 'http://place-hold.it/120x120/ddd/222/aaa.jpg&text='+event.json.name+'&bold' || 'img/missingThumbnail.jpg'}}" alt="{{ ::event.json.name || ''}}">
+                    <!-- ng-hide=":: !event.json.facebook[0]" -->
+                    <h4>{{:: event.json.startDate | date : 'EEEE, MMMM d, HH:mm' : 'UTC+0200' }} - {{:: (event.json.endDate | date : 'HH:mm') || "?"}}</h4>
+                    <div class="stat-col">
+                    <!-- distance to event -->
+                        <span class="icon icon-small ion-location list-distance" ng-if=":: currentPosition"> {{:: getDistance(event)}}km</span>
+                    <!-- attending -->
+                        <span class="icon icon-small ion-android-people list-attending " ng-hide="::!(event.json.facebook[0] && event.json.facebook[0].fbAttending)"> {{:: event.json.facebook[0].fbAttending || ''}}</span>
+                    <!-- render MF ratio chart -->
+                        <span class="icon icon-small ion-male list-gender" ng-hide="::!event.json.facebook[0]" ng-class=":: event.json.facebook[0].fbMFRatioN <= MF_NO_P ? 'class-noP' : '' ">
+                            <div class="donut-chart" ng-class="::event.json.facebook[0].fbMFRatioN < MF_LOW_P ? 'class-lowP' : ( event.json.facebook[0].fbMFRatioN < MF_MID_P ? 'class-midP' : 'class-highP')" >
+                                <div id="porcion1" class="recorte"><div style="transform: rotate({{::event.json.facebook[0].fbMFRatio*180}}deg); -ms-transform: rotate({{::event.json.facebook[0].fbMFRatio*180}}deg); -webkit-transform: rotate({{::event.json.facebook[0].fbMFRatio*180}}deg);" class="quesito" ></div></div>
+                                <div id="porcion2" class="recorte"><div class="quesito"></div></div>
+                            </div>
+                            <i class="icon icon-small ion-female"></i>
+                        </span>
+                    <!-- find cheapest available ticket price -->
+                        <span ng-hide="::!event.json.lowestPrice" ng-class="::isNumber(event.json.lowestPrice) ? 'icon-small ion-social-euro' : '' " class="list-price">
+                        {{ ::isNumber(event.json.lowestPrice) ? (event.json.lowestPrice | number : 2) : event.json.lowestPrice}}
+                        </span>
+                    </div>
+                    <strong>{{::event.json.name}}</strong><span ng-if="::event.json.geoLoc" class="location-title"> @ <span ng-bind-html="::event.json.location[0].gmapUrl | getLoc"></span>
+                    </span>
+                    <p ng-hide=":: !event.json.styles[0]">
+                        <span ng-repeat="style in ::event.json.styles | limitTo: 8"> | {{::style.style}}</span> |
+                    </p>
+                    <p>
+                        <span ng-repeat-start="artist in ::event.json.allArtists track by $index" ng-if="$first">{{::artist}}</span><span ng-repeat-end ng-if="!$first">, {{::artist}}</span>
+
+                        <!--
+                        <span>{{:: event.json.allArtists}}</span>
+                        <span ng-repeat="stage in ::event.json.lineUp">
+                        <span ng-repeat-start="artist in ::stage.artists" ng-if="$first">{{::artist.artist}}</span><span ng-repeat-end ng-if="!$first">, {{::artist.artist}}</span>
+                        </span> -->
+                    </p>
+                    <!-- -->
+                    <!--   -->
+                    <!-- <i class="icon ion-ios-star-outline"></i> -->
+                </a>
+            </ion-item>
+            <!--  -->
+        </ion-list>
+        <!-- loading icon + directive for infinite scrolling-->
+        <div style="text-align: center;  margin-top: 33px; margin-bottom: -21px; height: 18px">
+            <div class="spinner" ng-style="myStyle">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+        </div>
+        <ion-infinite-scroll on-infinite="addMoreItems();" distance="1%" ng-if="moreDataCanBeLoaded()" icon="none">
+        </ion-infinite-scroll>
+    </ion-content>
+</ion-view>
+<!-- <label class="item"> -->
+<!-- <button class="button button-block button-positive" ng-click="fbLogin()">
+            Login with Facebook
+        </button> -->
+<!-- </label> -->
